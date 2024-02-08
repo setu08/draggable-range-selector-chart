@@ -1,4 +1,11 @@
-canvas {
-  max-width: 50%;
-  height: auto;
+.selector-container {
+  display: flex;
+}
+
+.selector-child {
+  flex: 1;
+}
+
+.selector-child:first-child {
+  margin-right: 20px;
 }

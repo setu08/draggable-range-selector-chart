@@ -1,4 +1,10 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  ViewChild,
+  HostListener,
+} from '@angular/core';
 import Chart, { ChartData, ChartOptions, Plugin } from 'chart.js/auto';
 
 @Component({
@@ -15,6 +21,16 @@ export class AppComponent implements AfterViewInit {
   isDragging2: boolean = false;
   offsetX1: number = 0;
   offsetX2: number = 0;
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
+    // Recalculate the positions of the vertical lines when browser resizes
+    this.setInitialLinePositions();
+
+    if (this.chart) {
+      this.chart.update();
+    }
+  }
 
   ngAfterViewInit(): void {
     this.initializeChart();
@@ -229,5 +245,36 @@ export class AppComponent implements AfterViewInit {
     tooltip.style.display = 'block';
     tooltip.style.left = clientX + 10 + 'px';
     tooltip.style.top = clientY - 20 + 'px';
+  }
+
+  getXValue(x: number): any {
+    if (!this.chart) return '';
+
+    const xAxis = this.chart.scales['x'];
+    if (!xAxis) return '';
+
+    const index = xAxis.getValueForPixel(x) as number;
+    const labels = this.chart.data.labels;
+    if (!labels || index < 0 || index >= labels.length) return '';
+
+    return labels[index];
+  }
+
+  getYValue(x: number): any {
+    if (!this.chart) return '';
+
+    const xAxis = this.chart.scales['x'];
+    const yAxis = this.chart.scales['y'];
+    if (!xAxis || !yAxis) return '';
+
+    const index = xAxis.getValueForPixel(x) as number;
+    const dataset = this.chart.data.datasets?.[0];
+    if (!dataset || !dataset.data || index < 0 || index >= dataset.data.length)
+      return '';
+
+    const dataPoint = dataset.data[index];
+    if (dataPoint === null || typeof dataPoint === 'undefined') return '';
+
+    return dataPoint.toString();
   }
 }
